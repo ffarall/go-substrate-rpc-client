@@ -18,8 +18,6 @@
 package types
 
 import (
-	"encoding/json"
-
 	"github.com/snowfork/go-substrate-rpc-client/v4/scale"
 )
 
@@ -42,7 +40,11 @@ type SignedCommitment struct {
 	Signatures []OptionBeefySignature
 }
 
-// CompactSignedCommitment ...
+type OptionalSignedCommitment struct {
+	option
+	value SignedCommitment
+}
+
 type CompactSignedCommitment struct {
 	Commitment        Commitment
 	SignaturesFrom    []byte
@@ -92,28 +94,6 @@ func (o *OptionBeefySignature) SetNone() {
 // Unwrap returns a flag that indicates whether a value is present and the stored value
 func (o OptionBeefySignature) Unwrap() (ok bool, value BeefySignature) {
 	return o.hasValue, o.value
-}
-
-func (o OptionBeefySignature) MarshalJSON() ([]byte, error) {
-	if !o.hasValue {
-		return json.Marshal(nil)
-	}
-	return json.Marshal(o.value)
-}
-
-func (o *OptionBeefySignature) UnmarshalJSON(b []byte) error {
-	var tmp *BeefySignature
-	if err := json.Unmarshal(b, &tmp); err != nil {
-		return err
-	}
-	if tmp != nil {
-		o.hasValue = true
-		o.value = *tmp
-	} else {
-		o.hasValue = false
-	}
-
-	return nil
 }
 
 // bits are packed into chunks of this size
@@ -215,4 +195,26 @@ func makeChunks(slice []byte, chunkSize int) [][]byte {
 // Used for decoding JSON-RPC subscription messages (beefy_subscribeJustifications)
 func (s *SignedCommitment) UnmarshalText(text []byte) error {
 	return DecodeFromHexString(string(text), s)
+}
+
+func (o OptionalSignedCommitment) Encode(encoder scale.Encoder) error {
+	return encoder.EncodeOption(o.hasValue, o.value)
+}
+
+func (o *OptionalSignedCommitment) Decode(decoder scale.Decoder) error {
+	return decoder.DecodeOption(&o.hasValue, &o.value)
+}
+
+func (o OptionalSignedCommitment) Unwrap() (ok bool, value SignedCommitment) {
+	return o.hasValue, o.value
+}
+
+func (o *OptionalSignedCommitment) SetSome(value SignedCommitment) {
+	o.hasValue = true
+	o.value = value
+}
+
+func (o *OptionalSignedCommitment) SetNone() {
+	o.hasValue = false
+	o.value = SignedCommitment{}
 }
