@@ -32,8 +32,11 @@ var testAddressSS58 = "5H3gKVQU7DfNFfNGkgTrD7p715jjg7QXtat8X3UxiSyw7APW"
 var testKusamaAddressSS58 = "HZHyokLjagJ1KBiXPGu75B79g1yUnDiLxisuhkvCFCRrWBk"
 var testPolkadotAddressSS58 = "15yyTpfXxzvqhCNniKWrMGeFrhjPNQxfy5ccgLUKGY1THbTW"
 
+// scheme is used for sr25519 operations.
+var scheme = Sr25519Scheme{}
+
 func TestKeyRingPairFromSecretPhrase_SubstrateAddress(t *testing.T) {
-	p, err := KeyringPairFromSecret(testSecretPhrase, 42)
+	p, err := NewSr25519KeyringPair(testSecretPhrase, 42)
 	assert.NoError(t, err)
 
 	assert.Equal(t, KeyringPair{
@@ -44,7 +47,7 @@ func TestKeyRingPairFromSecretPhrase_SubstrateAddress(t *testing.T) {
 }
 
 func TestKeyRingPairFromSecretPhrase_PolkadotAddress(t *testing.T) {
-	p, err := KeyringPairFromSecret(testSecretPhrase, 0)
+	p, err := NewSr25519KeyringPair(testSecretPhrase, 0)
 	assert.NoError(t, err)
 
 	assert.Equal(t, KeyringPair{
@@ -55,7 +58,7 @@ func TestKeyRingPairFromSecretPhrase_PolkadotAddress(t *testing.T) {
 }
 
 func TestKeyRingPairFromSecretPhrase_KusamaAddress(t *testing.T) {
-	p, err := KeyringPairFromSecret(testSecretPhrase, 2)
+	p, err := NewSr25519KeyringPair(testSecretPhrase, 2)
 	assert.NoError(t, err)
 
 	assert.Equal(t, KeyringPair{
@@ -66,12 +69,12 @@ func TestKeyRingPairFromSecretPhrase_KusamaAddress(t *testing.T) {
 }
 
 func TestKeyRingPairFromSecretPhrase_InvalidSecretPhrase(t *testing.T) {
-	_, err := KeyringPairFromSecret("foo", 42)
+	_, err := NewSr25519KeyringPair("foo", 42)
 	assert.Error(t, err)
 }
 
 func TestKeyringPairFromSecretSeed(t *testing.T) {
-	p, err := KeyringPairFromSecret(testSecretSeed, 42)
+	p, err := NewSr25519KeyringPair(testSecretSeed, 42)
 	assert.NoError(t, err)
 
 	assert.Equal(t, KeyringPair{
@@ -82,7 +85,7 @@ func TestKeyringPairFromSecretSeed(t *testing.T) {
 }
 
 func TestKeyringPairFromSecretSeedAndNetwork(t *testing.T) {
-	p, err := KeyringPairFromSecret(testSecretSeed, 42)
+	p, err := NewSr25519KeyringPair(testSecretSeed, 42)
 	assert.NoError(t, err)
 
 	assert.Equal(t, KeyringPair{
@@ -95,10 +98,10 @@ func TestKeyringPairFromSecretSeedAndNetwork(t *testing.T) {
 func TestSignAndVerify(t *testing.T) {
 	data := []byte("hello!")
 
-	sig, err := Sign(data, TestKeyringPairAlice.URI)
+	sig, err := scheme.Sign(data, TestKeyringPairAlice.URI)
 	assert.NoError(t, err)
 
-	ok, err := Verify(data, sig, TestKeyringPairAlice.URI)
+	ok, err := scheme.Verify(data, sig, TestKeyringPairAlice.URI)
 	assert.NoError(t, err)
 
 	assert.True(t, ok)
@@ -107,24 +110,24 @@ func TestSignAndVerify(t *testing.T) {
 func TestSign_InvalidSecretPhrase(t *testing.T) {
 	data := []byte("hello!")
 
-	_, err := Sign(data, "foo")
+	_, err := scheme.Sign(data, "foo")
 	assert.Error(t, err)
 }
 
 func TestSignAndVerify_InvalidSecretPhraseOnVerify(t *testing.T) {
 	data := []byte("hello!")
 
-	sig, err := Sign(data, TestKeyringPairAlice.URI)
+	sig, err := scheme.Sign(data, TestKeyringPairAlice.URI)
 	assert.NoError(t, err)
 
-	_, err = Verify(data, sig, "foo")
+	_, err = scheme.Verify(data, sig, "foo")
 	assert.Error(t, err)
 }
 
 func TestVerify_InvalidSignatureLength(t *testing.T) {
 	data := []byte("hello!")
 
-	_, err := Verify(data, []byte{'f', 'o', 'o'}, TestKeyringPairAlice.URI)
+	_, err := scheme.Verify(data, []byte{'f', 'o', 'o'}, TestKeyringPairAlice.URI)
 	assert.Error(t, err)
 }
 
@@ -133,10 +136,10 @@ func TestSignAndVerifyLong(t *testing.T) {
 	_, err := rand.Read(data)
 	assert.NoError(t, err)
 
-	sig, err := Sign(data, TestKeyringPairAlice.URI)
+	sig, err := scheme.Sign(data, TestKeyringPairAlice.URI)
 	assert.NoError(t, err)
 
-	ok, err := Verify(data, sig, TestKeyringPairAlice.URI)
+	ok, err := scheme.Verify(data, sig, TestKeyringPairAlice.URI)
 	assert.NoError(t, err)
 
 	assert.True(t, ok)
