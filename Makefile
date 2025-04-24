@@ -27,7 +27,7 @@ test: 				## run all tests in project against the RPC URL specified in the RPC_U
 	@go test -race -count=1 `go list ./... | grep -v '/gethrpc'`
 
 test-cover: 			## run all tests in project against the RPC URL specified in the RPC_URL env variable or localhost and report coverage
-	@go test -race -coverprofile=coverage.txt -covermode=atomic `go list ./... | grep -v '/gethrpc'`
+	@go test -p=1 -race -coverprofile=coverage.txt -covermode=atomic `go list ./... | grep -v '/gethrpc'`
 
 test-dockerized:		## run all tests in a docker container against the Substrate Default Docker image
 test-dockerized: run-substrate-docker
