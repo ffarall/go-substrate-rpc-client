@@ -209,7 +209,7 @@ func Example_makeASimpleTransfer() {
 		panic(fmt.Errorf("failed to convert balance"))
 	}
 
-	c, err := types.NewCall(meta, "Balances.transfer", bob, types.NewUCompact(bal))
+	c, err := types.NewCall(meta, "Balances.transfer_allow_death", bob, types.NewUCompact(bal))
 	if err != nil {
 		panic(err)
 	}
@@ -217,6 +217,7 @@ func Example_makeASimpleTransfer() {
 	// Create the extrinsic
 	ext := types.NewExtrinsic(c)
 
+	// Get genesis hash for Era
 	genesisHash, err := api.RPC.Chain.GetBlockHash(0)
 	if err != nil {
 		panic(err)
@@ -245,7 +246,7 @@ func Example_makeASimpleTransfer() {
 		GenesisHash:        genesisHash,
 		Nonce:              types.NewUCompactFromUInt(uint64(nonce)),
 		SpecVersion:        rv.SpecVersion,
-		Tip:                types.NewUCompactFromUInt(100),
+		Tip:                types.NewUCompactFromUInt(0),
 		TransactionVersion: rv.TransactionVersion,
 	}
 
@@ -432,6 +433,7 @@ func Example_transactionWithEvents() {
 	// Create the extrinsic
 	ext := types.NewExtrinsic(c)
 
+	// Get genesis hash for Era
 	genesisHash, err := api.RPC.Chain.GetBlockHash(0)
 	if err != nil {
 		panic(err)
@@ -483,7 +485,6 @@ func Example_transactionWithEvents() {
 
 	for {
 		status := <-sub.Chan()
-		fmt.Printf("Transaction status: %#v\n", status)
 
 		if status.IsInBlock {
 			fmt.Printf("Completed at block hash: %#x\n", status.AsInBlock)
