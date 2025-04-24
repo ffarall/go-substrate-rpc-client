@@ -40,7 +40,7 @@ func TestAuthor_SubmitExtrinsic(t *testing.T) {
 	assert.NoError(t, err)
 
 	amount := types.NewUCompactFromUInt(12345)
-	c, err := types.NewCall(meta, "Balances.transfer", bob, amount)
+	c, err := types.NewCall(meta, "Balances.transfer_allow_death", bob, amount)
 	assert.NoError(t, err)
 
 	for {

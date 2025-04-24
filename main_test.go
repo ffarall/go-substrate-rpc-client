@@ -418,14 +418,14 @@ func Example_transactionWithEvents() {
 	}
 
 	// Create a call, transferring 12345 units to Bob
-	bob, err := types.NewAddressFromHexAccountID("0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48")
+	bob, err := types.NewMultiAddressFromHexAccountID("0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48")
 	if err != nil {
 		panic(err)
 	}
 
 	amount := types.NewUCompactFromUInt(12345)
 
-	c, err := types.NewCall(meta, "Balances.transfer", bob, amount)
+	c, err := types.NewCall(meta, "Balances.transfer_allow_death", bob, amount)
 	if err != nil {
 		panic(err)
 	}
@@ -468,7 +468,7 @@ func Example_transactionWithEvents() {
 		TransactionVersion: rv.TransactionVersion,
 	}
 
-	fmt.Printf("Sending %v from %#x to %#x with nonce %v", amount, signature.TestKeyringPairAlice.PublicKey, bob.AsAccountID, nonce)
+	fmt.Printf("Sending %v from %#x to %#x with nonce %v", amount, signature.TestKeyringPairAlice.PublicKey, bob.AsID, nonce)
 
 	// Sign the transaction using Alice's default account
 	err = ext.Sign(signature.TestKeyringPairAlice, o)
