@@ -43,6 +43,7 @@ func TestKeyRingPairFromSecretPhrase_SubstrateAddress(t *testing.T) {
 		URI:       testSecretPhrase,
 		Address:   testAddressSS58,
 		PublicKey: types.MustHexDecodeString(testPubKey),
+		Scheme:    scheme,
 	}, p)
 }
 
@@ -54,6 +55,7 @@ func TestKeyRingPairFromSecretPhrase_PolkadotAddress(t *testing.T) {
 		URI:       testSecretPhrase,
 		Address:   testPolkadotAddressSS58,
 		PublicKey: types.MustHexDecodeString(testPubKey),
+		Scheme:    scheme,
 	}, p)
 }
 
@@ -65,6 +67,7 @@ func TestKeyRingPairFromSecretPhrase_KusamaAddress(t *testing.T) {
 		URI:       testSecretPhrase,
 		Address:   testKusamaAddressSS58,
 		PublicKey: types.MustHexDecodeString(testPubKey),
+		Scheme:    scheme,
 	}, p)
 }
 
@@ -81,6 +84,7 @@ func TestKeyringPairFromSecretSeed(t *testing.T) {
 		URI:       testSecretSeed,
 		Address:   testAddressSS58,
 		PublicKey: types.MustHexDecodeString(testPubKey),
+		Scheme:    scheme,
 	}, p)
 }
 
@@ -92,6 +96,7 @@ func TestKeyringPairFromSecretSeedAndNetwork(t *testing.T) {
 		URI:       testSecretSeed,
 		Address:   testAddressSS58,
 		PublicKey: types.MustHexDecodeString(testPubKey),
+		Scheme:    scheme,
 	}, p)
 }
 
