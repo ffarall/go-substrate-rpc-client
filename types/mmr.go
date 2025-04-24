@@ -44,7 +44,7 @@ func (d *GenerateMMRProofResponse) UnmarshalJSON(bz []byte) error {
 	if err != nil {
 		return err
 	}
-	if proof.LeafIndices == nil || len(proof.LeafIndices) == 0 {
+	if len(proof.LeafIndices) == 0 {
 		return fmt.Errorf("decode proof LeafIndices error")
 	}
 	d.Proof.LeafCount = proof.LeafCount

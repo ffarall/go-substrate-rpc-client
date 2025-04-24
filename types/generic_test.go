@@ -6,7 +6,7 @@ import (
 	. "github.com/snowfork/go-substrate-rpc-client/v4/types"
 
 	fuzz "github.com/google/gofuzz"
-	. "github.com/snowfork/go-substrate-rpc-client/v4/types/codec"
+	codec "github.com/snowfork/go-substrate-rpc-client/v4/types/codec"
 	. "github.com/snowfork/go-substrate-rpc-client/v4/types/test_utils"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,7 +23,7 @@ var (
 
 			c.Fuzz(&u)
 
-			*o = NewOption[U64](u)
+			*o = NewOption(u)
 		}),
 	}
 )
@@ -34,18 +34,17 @@ func TestOption_EncodeDecode(t *testing.T) {
 
 	testOptionEncodeLen[U64](11, t)
 
-	accountID := newTestAccountID()
-	testOptionEncodeLen[AccountID](accountID, t)
-
-	testOptionEncodeLen[ItemDetails](testInstanceDetails, t)
+	accountID := NewAccountID([]byte{1, 2, 3})
+	testOptionEncodeLen(accountID, t)
 }
 
 func testOptionEncodeLen[T any](testVal T, t *testing.T) {
-	valEnc, err := Encode(testVal)
+	valEnc, err := codec.Encode(testVal)
 	assert.NoError(t, err)
 
-	opt := NewOption[T](testVal)
-	optEnc, err := Encode(opt)
+	opt := NewOption(testVal)
+	optEnc, err := codec.Encode(opt)
+	assert.NoError(t, err)
 
 	assert.Equal(t, len(optEnc), len(valEnc)+1)
 }
@@ -53,13 +52,10 @@ func testOptionEncodeLen[T any](testVal T, t *testing.T) {
 func TestOption_OptionMethods(t *testing.T) {
 	testOptionMethods[U64](11, t)
 
-	accountID := newTestAccountID()
+	accountID := NewAccountID([]byte{1, 2, 3})
 
-	testOptionMethods[*AccountID](&accountID, t)
-	testOptionMethods[AccountID](accountID, t)
-
-	testOptionMethods[*ItemDetails](&testInstanceDetails, t)
-	testOptionMethods[ItemDetails](testInstanceDetails, t)
+	testOptionMethods(&accountID, t)
+	testOptionMethods(accountID, t)
 }
 
 func testOptionMethods[T any](testVal T, t *testing.T) {

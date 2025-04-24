@@ -19,21 +19,25 @@ Please refer to https://godoc.org/github.com/centrifuge/go-substrate-rpc-client
 
 ## Contributing
 
-1. Install dependencies by running `make` followed by `make install`
-1. Run tests `make test`
-1. Lint `make lint` (you can use `make lint-fix` to automatically fix issues)
+1. Run tests: `make test`
+2. Lint: `make lint` (you can use `make lint-fix` to automatically fix issues)
+3. Clean up: `make clean`
+4. View available commands: `make help`
 
-## Run tests in a Docker container against the Substrate Default Docker image
+## Running Tests
 
-1. Run the docker container `make test-dockerized`
+### Run tests in a Docker container against the Substrate Default Docker image
 
-## Run tests locally against the Substrate Default Docker image
+1. Run the docker container: `make test-dockerized`
+
+### Run tests locally against the Substrate Default Docker image
 
 1. Start the Substrate Default Docker image: `make run-substrate-docker`
-1. In another terminal, run the tests against that image: `make test`
-1. Visit https://polkadot.js.org/apps for inspection
+2. In another terminal, run the tests against that image: `make test`
+3. Visit https://polkadot.js.org/apps for inspection
 
-## Run tests locally against any substrate endpoint
+### Run tests locally against any substrate endpoint
 
 1. Set the endpoint: `export RPC_URL="http://example.com:9933"`
-1. Run the tests `make test`
+2. Run the tests: `make test`
+3. Run tests with coverage report: `make test-cover`
