@@ -120,17 +120,21 @@ func TestExtrinsic_Sign(t *testing.T) {
 	mb, err := EncodeToBytes(extDec.Method)
 	assert.NoError(t, err)
 
-	verifyPayload := ExtrinsicPayloadV4{
-		ExtrinsicPayloadV3: ExtrinsicPayloadV3{
-			Method:      mb,
-			Era:         extDec.Signature.Era,
-			Nonce:       extDec.Signature.Nonce,
-			Tip:         extDec.Signature.Tip,
-			SpecVersion: o.SpecVersion,
-			GenesisHash: o.GenesisHash,
-			BlockHash:   o.BlockHash,
+	verifyPayload := ExtrinsicPayloadV5{
+		ExtrinsicPayloadV4: ExtrinsicPayloadV4{
+			ExtrinsicPayloadV3: ExtrinsicPayloadV3{
+				Method:      mb,
+				Era:         extDec.Signature.Era,
+				Nonce:       extDec.Signature.Nonce,
+				Tip:         extDec.Signature.Tip,
+				SpecVersion: o.SpecVersion,
+				GenesisHash: o.GenesisHash,
+				BlockHash:   o.BlockHash,
+			},
+			TransactionVersion: o.TransactionVersion,
 		},
-		TransactionVersion: 1,
+		CheckMetadataMode: extDec.Signature.CheckMetadataMode,
+		CheckMetadataHash: o.CheckMetadataHash,
 	}
 
 	// verify sig
