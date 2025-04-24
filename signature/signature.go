@@ -29,9 +29,8 @@ type KeyringPair struct {
 	Address string
 	// PublicKey
 	PublicKey []byte
-
-	// internal scheme used for signing and verifying
-	scheme Scheme
+	// Scheme used for signing and verifying
+	Scheme Scheme
 }
 
 // TestKeyringPairAlice is a predefined test pair using sr25519
@@ -62,7 +61,7 @@ func NewSr25519KeyringPair(uri string, network uint8) (KeyringPair, error) {
 	if err != nil {
 		return kp, err
 	}
-	kp.scheme = Sr25519Scheme{}
+	kp.Scheme = Sr25519Scheme{}
 	return kp, nil
 }
 
@@ -72,16 +71,16 @@ func NewEcdsaKeyringPair(privateKeyHex string) (KeyringPair, error) {
 	if err != nil {
 		return kp, err
 	}
-	kp.scheme = EcdsaScheme{}
+	kp.Scheme = EcdsaScheme{}
 	return kp, nil
 }
 
 // Sign signs data using the KeyringPair's underlying scheme.
 func (kp KeyringPair) Sign(data []byte) ([]byte, error) {
-	return kp.scheme.Sign(data, kp.URI)
+	return kp.Scheme.Sign(data, kp.URI)
 }
 
 // Verify verifies a signature using the KeyringPair's underlying scheme.
 func (kp KeyringPair) Verify(data []byte, sig []byte) (bool, error) {
-	return kp.scheme.Verify(data, sig, kp.URI)
+	return kp.Scheme.Verify(data, sig, kp.URI)
 }

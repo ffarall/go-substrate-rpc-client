@@ -140,7 +140,7 @@ func TestExtrinsic_Sign(t *testing.T) {
 	// verify sig
 	b, err := EncodeToBytes(verifyPayload)
 	assert.NoError(t, err)
-	ok, err := signature.Verify(b, extDec.Signature.Signature.AsSr25519[:], signature.TestKeyringPairAlice.URI)
+	ok, err := signature.TestKeyringPairAlice.Verify(b, extDec.Signature.Signature.AsSr25519[:])
 	assert.NoError(t, err)
 	assert.True(t, ok)
 }
