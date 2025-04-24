@@ -1,3 +1,8 @@
+# Forking Strategy
+- `main`: Follows [Snowfork/go-substrate-rpc-client](https://github.com/Snowfork/go-substrate-rpc-client)'s `main`.
+- `solochain`: Default branch with this fork's changes.
+- There's a [PR](https://github.com/ffarall/go-substrate-rpc-client/pull/2) to track the diff between `solochain` and `main`.
+
 # Go Substrate RPC Client (GSRPC)
 
 [![License: Apache v2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
