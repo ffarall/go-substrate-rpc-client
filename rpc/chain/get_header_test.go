@@ -18,17 +18,20 @@ package chain
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestChain_GetHeaderLatest(t *testing.T) {
+	time.Sleep(6 * time.Second) // Wait for block 1
 	header, err := chain.GetHeaderLatest()
 	assert.NoError(t, err)
 	assert.NotEmpty(t, header.Number)
 }
 
 func TestChain_GetHeader(t *testing.T) {
+	time.Sleep(6 * time.Second) // Wait for block 1
 	res, err := chain.GetFinalizedHead()
 	assert.NoError(t, err)
 
