@@ -209,7 +209,7 @@ func Example_makeASimpleTransfer() {
 		panic(fmt.Errorf("failed to convert balance"))
 	}
 
-	c, err := types.NewCall(meta, "Balances.transfer", bob, types.NewUCompact(bal))
+	c, err := types.NewCall(meta, "Balances.transfer_keep_alive", bob, types.NewUCompact(bal))
 	if err != nil {
 		panic(err)
 	}
@@ -217,6 +217,7 @@ func Example_makeASimpleTransfer() {
 	// Create the extrinsic
 	ext := types.NewExtrinsic(c)
 
+	// Get genesis hash for Era
 	genesisHash, err := api.RPC.Chain.GetBlockHash(0)
 	if err != nil {
 		panic(err)
@@ -245,7 +246,7 @@ func Example_makeASimpleTransfer() {
 		GenesisHash:        genesisHash,
 		Nonce:              types.NewUCompactFromUInt(uint64(nonce)),
 		SpecVersion:        rv.SpecVersion,
-		Tip:                types.NewUCompactFromUInt(100),
+		Tip:                types.NewUCompactFromUInt(0),
 		TransactionVersion: rv.TransactionVersion,
 	}
 
@@ -417,14 +418,14 @@ func Example_transactionWithEvents() {
 	}
 
 	// Create a call, transferring 12345 units to Bob
-	bob, err := types.NewAddressFromHexAccountID("0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48")
+	bob, err := types.NewMultiAddressFromHexAccountID("0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48")
 	if err != nil {
 		panic(err)
 	}
 
 	amount := types.NewUCompactFromUInt(12345)
 
-	c, err := types.NewCall(meta, "Balances.transfer", bob, amount)
+	c, err := types.NewCall(meta, "Balances.transfer_allow_death", bob, amount)
 	if err != nil {
 		panic(err)
 	}
@@ -432,6 +433,7 @@ func Example_transactionWithEvents() {
 	// Create the extrinsic
 	ext := types.NewExtrinsic(c)
 
+	// Get genesis hash for Era
 	genesisHash, err := api.RPC.Chain.GetBlockHash(0)
 	if err != nil {
 		panic(err)
@@ -466,7 +468,7 @@ func Example_transactionWithEvents() {
 		TransactionVersion: rv.TransactionVersion,
 	}
 
-	fmt.Printf("Sending %v from %#x to %#x with nonce %v", amount, signature.TestKeyringPairAlice.PublicKey, bob.AsAccountID, nonce)
+	fmt.Printf("Sending %v from %#x to %#x with nonce %v", amount, signature.TestKeyringPairAlice.PublicKey, bob.AsID, nonce)
 
 	// Sign the transaction using Alice's default account
 	err = ext.Sign(signature.TestKeyringPairAlice, o)
@@ -483,7 +485,6 @@ func Example_transactionWithEvents() {
 
 	for {
 		status := <-sub.Chan()
-		fmt.Printf("Transaction status: %#v\n", status)
 
 		if status.IsInBlock {
 			fmt.Printf("Completed at block hash: %#x\n", status.AsInBlock)
