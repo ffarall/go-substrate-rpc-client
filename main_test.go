@@ -192,7 +192,6 @@ func Example_makeASimpleTransfer() {
 		panic(err)
 	}
 
-	time.Sleep(6 * time.Second) // Add delay before fetching metadata
 	meta, err := api.RPC.State.GetMetadataLatest()
 	if err != nil {
 		panic(err)

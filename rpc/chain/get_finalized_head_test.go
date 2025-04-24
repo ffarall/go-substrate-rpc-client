@@ -18,13 +18,11 @@ package chain
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestChain_GetFinalizedHead(t *testing.T) {
-	time.Sleep(6 * time.Second) // Wait for block 1
 	res, err := chain.GetFinalizedHead()
 	assert.NoError(t, err)
 

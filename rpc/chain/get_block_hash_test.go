@@ -18,14 +18,12 @@ package chain
 
 import (
 	"testing"
-	"time"
 
 	"github.com/snowfork/go-substrate-rpc-client/v4/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestChain_GetBlockHash(t *testing.T) {
-	time.Sleep(6 * time.Second) // Wait for block 1
 	res, err := chain.GetBlockHash(1)
 	assert.NoError(t, err)
 
@@ -35,7 +33,6 @@ func TestChain_GetBlockHash(t *testing.T) {
 }
 
 func TestChain_GetBlockHashLatest(t *testing.T) {
-	time.Sleep(6 * time.Second) // Wait for block 1
 	res, err := chain.GetBlockHashLatest()
 	assert.NoError(t, err)
 

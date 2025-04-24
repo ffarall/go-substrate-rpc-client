@@ -18,20 +18,17 @@ package chain
 
 import (
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestChain_GetBlockLatest(t *testing.T) {
-	time.Sleep(6 * time.Second) // Wait for block 1
 	rv, err := chain.GetBlockLatest()
 	assert.NoError(t, err)
 	assert.True(t, rv.Block.Header.Number > 0)
 }
 
 func TestChain_GetBlock(t *testing.T) {
-	time.Sleep(6 * time.Second) // Wait for block 1
 	rv, err := chain.GetBlockLatest()
 	assert.NoError(t, err)
 
