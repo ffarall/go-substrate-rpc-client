@@ -46,7 +46,7 @@ func (e ExtrinsicPayloadV3) Sign(signer signature.KeyringPair) (Signature, error
 		return Signature{}, err
 	}
 
-	sig, err := signature.Sign(b, signer.URI)
+	sig, err := signer.Sign(b)
 	return NewSignature(sig), err
 }
 
@@ -108,7 +108,7 @@ func (e ExtrinsicPayloadV4) Sign(signer signature.KeyringPair) (Signature, error
 		return Signature{}, err
 	}
 
-	sig, err := signature.Sign(b, signer.URI)
+	sig, err := signer.Sign(b)
 	return NewSignature(sig), err
 }
 
@@ -174,7 +174,7 @@ func (e ExtrinsicPayloadV5) Sign(signer signature.KeyringPair) (Signature, error
 		return Signature{}, err
 	}
 
-	sig, err := signature.Sign(b, signer.URI)
+	sig, err := signer.Sign(b)
 	return NewSignature(sig), err
 }
 
