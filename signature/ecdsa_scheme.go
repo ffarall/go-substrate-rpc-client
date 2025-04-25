@@ -29,7 +29,7 @@ func (EcdsaScheme) DeriveKeyPair(uri string, _ uint8) (KeyringPair, error) {
 	addr := crypto.PubkeyToAddress(*pubKey).Hex()
 
 	return KeyringPair{
-		URI:       uri,
+		URI:       "0x" + keyHex,
 		PublicKey: pubBytes,
 		Address:   addr,
 	}, nil
