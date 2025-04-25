@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+
+	"github.com/snowfork/go-substrate-rpc-client/v4/scale"
 )
 
 type KeyringPair struct {
@@ -83,4 +85,72 @@ func (kp KeyringPair) Sign(data []byte) ([]byte, error) {
 // Verify verifies a signature using the KeyringPair's underlying scheme.
 func (kp KeyringPair) Verify(data []byte, sig []byte) (bool, error) {
 	return kp.Scheme.Verify(data, sig, kp.URI)
+}
+
+func (kp *KeyringPair) Decode(decoder scale.Decoder) error {
+	err := decoder.Decode(&kp.URI)
+	if err != nil {
+		return fmt.Errorf("failed to decode URI: %w", err)
+	}
+
+	err = decoder.Decode(&kp.Address)
+	if err != nil {
+		return fmt.Errorf("failed to decode Address: %w", err)
+	}
+
+	err = decoder.Decode(&kp.PublicKey)
+	if err != nil {
+		return fmt.Errorf("failed to decode PublicKey: %w", err)
+	}
+
+	var schemeType byte
+	err = decoder.Decode(&schemeType)
+	if err != nil {
+		return fmt.Errorf("failed to decode scheme type: %w", err)
+	}
+
+	switch schemeType {
+	case 0:
+		kp.Scheme = Sr25519Scheme{}
+	case 1:
+		kp.Scheme = EcdsaScheme{}
+	default:
+		return fmt.Errorf("unknown scheme type: %d", schemeType)
+	}
+
+	return nil
+}
+
+func (kp KeyringPair) Encode(encoder scale.Encoder) error {
+	err := encoder.Encode(kp.URI)
+	if err != nil {
+		return fmt.Errorf("failed to encode URI: %w", err)
+	}
+
+	err = encoder.Encode(kp.Address)
+	if err != nil {
+		return fmt.Errorf("failed to encode Address: %w", err)
+	}
+
+	err = encoder.Encode(kp.PublicKey)
+	if err != nil {
+		return fmt.Errorf("failed to encode PublicKey: %w", err)
+	}
+
+	var schemeType byte
+	switch kp.Scheme.(type) {
+	case Sr25519Scheme:
+		schemeType = 0
+	case EcdsaScheme:
+		schemeType = 1
+	default:
+		return fmt.Errorf("unknown or nil scheme type: %T", kp.Scheme)
+	}
+
+	err = encoder.Encode(schemeType)
+	if err != nil {
+		return fmt.Errorf("failed to encode scheme type: %w", err)
+	}
+
+	return nil
 }
