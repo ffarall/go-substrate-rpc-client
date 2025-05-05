@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
+	"golang.org/x/crypto/blake2b"
 )
 
 // EcdsaScheme implements Scheme for Ethereum ECDSA signatures.
@@ -37,14 +38,23 @@ func (EcdsaScheme) DeriveKeyPair(uri string, _ uint8) (KeyringPair, error) {
 
 // Sign signs data using Ethereum ECDSA (keccak256 hash if needed).
 func (EcdsaScheme) Sign(data []byte, uri string) ([]byte, error) {
+	// If the data is longer than 256 bytes, Substrate chains will hash it and sign the hash,
+	// using BLAKE2b-256.
+	if len(data) > 256 {
+		h := blake2b.Sum256(data)
+		data = h[:]
+	}
+	
 	keyHex := strings.TrimPrefix(uri, "0x")
 	privKey, err := crypto.HexToECDSA(keyHex)
 	if err != nil {
 		return nil, fmt.Errorf("invalid private key hex: %w", err)
 	}
-	if len(data) != 32 {
-		data = crypto.Keccak256(data)
-	}
+
+	// The data needs to always be hashed with Keccak256, mirroring Frontier's verify logic.
+	// See: https://github.com/polkadot-evm/frontier/blob/c59a6c1aa2e60d835d81aa5db3eb1d54fac9cd60/primitives/account/src/lib.rs#L195
+	data = crypto.Keccak256(data)
+
 	sig, err := crypto.Sign(data, privKey)
 	if err != nil {
 		return nil, err
