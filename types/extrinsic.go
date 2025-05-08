@@ -161,7 +161,7 @@ func (e *Extrinsic) Sign(signer signature.KeyringPair, o SignatureOptions) error
 
 	extSig := ExtrinsicSignatureV5{
 		Signer:            signerPubKey,
-		Signature:         MultiSignature{IsSr25519: true, AsSr25519: sig},
+		Signature:         MultiSignature{IsSr25519: true, AsSr25519: NewSignature(sig)},
 		Era:               era,
 		Nonce:             o.Nonce,
 		Tip:               o.Tip,
