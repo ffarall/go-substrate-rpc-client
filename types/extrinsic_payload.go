@@ -168,14 +168,13 @@ type ExtrinsicPayloadV5 struct {
 }
 
 // Sign the extrinsic payload with the given derivation path
-func (e ExtrinsicPayloadV5) Sign(signer signature.KeyringPair) (Signature, error) {
+func (e ExtrinsicPayloadV5) Sign(signer signature.KeyringPair) ([]byte, error) {
 	b, err := codec.Encode(e)
 	if err != nil {
-		return Signature{}, err
+		return nil, err
 	}
 
-	sig, err := signer.Sign(b)
-	return NewSignature(sig), err
+	return signer.Sign(b)
 }
 
 func (e ExtrinsicPayloadV5) Encode(encoder scale.Encoder) error {

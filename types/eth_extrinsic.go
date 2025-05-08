@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"math/big"
 	"strings"
 
@@ -29,39 +28,41 @@ import (
 )
 
 const (
-	ExtrinsicBitSigned      = 0x80
-	ExtrinsicBitUnsigned    = 0
-	ExtrinsicUnmaskVersion  = 0x7f
-	ExtrinsicDefaultVersion = 1
-	ExtrinsicVersionUnknown = 0 // v0 is unknown
-	ExtrinsicVersion1       = 1
-	ExtrinsicVersion2       = 2
-	ExtrinsicVersion3       = 3
-	ExtrinsicVersion4       = 4
+	EthExtrinsicBitSigned      = 0x80
+	EthExtrinsicBitUnsigned    = 0
+	EthExtrinsicUnmaskVersion  = 0x7f
+	EthExtrinsicDefaultVersion = 1
+	EthExtrinsicVersionUnknown = 0 // v0 is unknown
+	EthExtrinsicVersion1       = 1
+	EthExtrinsicVersion2       = 2
+	EthExtrinsicVersion3       = 3
+	EthExtrinsicVersion4       = 4
 )
 
 // Extrinsic is a piece of Args bundled into a block that expresses something from the "external" (i.e. off-chain)
 // world. There are, broadly speaking, two types of extrinsic: transactions (which tend to be signed) and
 // inherents (which don't).
-type Extrinsic struct {
+//
+// In particular, this is the type for Ethereum compatible transactions, like for Frontier-enabled chains.
+type EthExtrinsic struct {
 	// Version is the encoded version flag (which encodes the raw transaction version and signing information in one byte)
 	Version byte
-	// Signature is the ExtrinsicSignatureV5, it's presence depends on the Version flag
-	Signature ExtrinsicSignatureV5
+	// Signature is the EthExtrinsicSignatureV5, it's presence depends on the Version flag
+	Signature EthExtrinsicSignatureV5
 	// Method is the call this extrinsic wraps
 	Method Call
 }
 
-// NewExtrinsic creates a new Extrinsic from the provided Call
-func NewExtrinsic(c Call) Extrinsic {
-	return Extrinsic{
+// NewEthExtrinsic creates a new EthExtrinsic from the provided Call
+func NewEthExtrinsic(c Call) EthExtrinsic {
+	return EthExtrinsic{
 		Version: ExtrinsicVersion4,
 		Method:  c,
 	}
 }
 
 // UnmarshalJSON fills Extrinsic with the JSON encoded byte array given by bz
-func (e *Extrinsic) UnmarshalJSON(bz []byte) error {
+func (e *EthExtrinsic) UnmarshalJSON(bz []byte) error {
 	var tmp string
 	if err := json.Unmarshal(bz, &tmp); err != nil {
 		return err
@@ -100,8 +101,8 @@ func (e *Extrinsic) UnmarshalJSON(bz []byte) error {
 	return DecodeFromBytes(prefixed, e)
 }
 
-// MarshalJSON returns a JSON encoded byte array of Extrinsic
-func (e Extrinsic) MarshalJSON() ([]byte, error) {
+// MarshalJSON returns a JSON encoded byte array of EthExtrinsic
+func (e EthExtrinsic) MarshalJSON() ([]byte, error) {
 	s, err := EncodeToHexString(e)
 	if err != nil {
 		return nil, err
@@ -110,18 +111,18 @@ func (e Extrinsic) MarshalJSON() ([]byte, error) {
 }
 
 // IsSigned returns true if the extrinsic is signed
-func (e Extrinsic) IsSigned() bool {
-	return e.Version&ExtrinsicBitSigned == ExtrinsicBitSigned
+func (e EthExtrinsic) IsSigned() bool {
+	return e.Version&EthExtrinsicBitSigned == EthExtrinsicBitSigned
 }
 
 // Type returns the raw transaction version (not flagged with signing information)
-func (e Extrinsic) Type() uint8 {
-	return e.Version & ExtrinsicUnmaskVersion
+func (e EthExtrinsic) Type() uint8 {
+	return e.Version & EthExtrinsicUnmaskVersion
 }
 
 // Sign adds a signature to the extrinsic
-func (e *Extrinsic) Sign(signer signature.KeyringPair, o SignatureOptions) error {
-	if e.Type() != ExtrinsicVersion4 {
+func (e *EthExtrinsic) Sign(signer signature.KeyringPair, o SignatureOptions) error {
+	if e.Type() != EthExtrinsicVersion4 {
 		return fmt.Errorf("unsupported extrinsic version: %v (isSigned: %v, type: %v)", e.Version, e.IsSigned(), e.Type())
 	}
 
@@ -152,16 +153,19 @@ func (e *Extrinsic) Sign(signer signature.KeyringPair, o SignatureOptions) error
 		CheckMetadataHash: o.CheckMetadataHash,
 	}
 
-	signerPubKey := NewMultiAddressFromAccountID(signer.PublicKey)
+	ethAddr, err := NewEthAddress(signer.Address)
+	if err != nil {
+		return err
+	}
 
 	sig, err := payload.Sign(signer)
 	if err != nil {
 		return err
 	}
 
-	extSig := ExtrinsicSignatureV5{
-		Signer:            signerPubKey,
-		Signature:         MultiSignature{IsSr25519: true, AsSr25519: NewSignature(sig)},
+	extSig := EthExtrinsicSignatureV5{
+		Signer:            ethAddr,
+		Signature:         EthSignature(NewEcdsaSignature(sig)),
 		Era:               era,
 		Nonce:             o.Nonce,
 		Tip:               o.Tip,
@@ -176,7 +180,7 @@ func (e *Extrinsic) Sign(signer signature.KeyringPair, o SignatureOptions) error
 	return nil
 }
 
-func (e *Extrinsic) Decode(decoder scale.Decoder) error {
+func (e *EthExtrinsic) Decode(decoder scale.Decoder) error {
 	// compact length encoding (1, 2, or 4 bytes) (may not be there for Extrinsics older than Jan 11 2019)
 	_, err := decoder.DecodeUintCompact()
 	if err != nil {
@@ -211,8 +215,8 @@ func (e *Extrinsic) Decode(decoder scale.Decoder) error {
 	return nil
 }
 
-func (e Extrinsic) Encode(encoder scale.Encoder) error {
-	if e.Type() != ExtrinsicVersion4 {
+func (e EthExtrinsic) Encode(encoder scale.Encoder) error {
+	if e.Type() != EthExtrinsicVersion4 {
 		return fmt.Errorf("unsupported extrinsic version: %v (isSigned: %v, type: %v)", e.Version, e.IsSigned(),
 			e.Type())
 	}
@@ -256,114 +260,4 @@ func (e Extrinsic) Encode(encoder scale.Encoder) error {
 	}
 
 	return nil
-}
-
-// Call is the extrinsic function descriptor
-type Call struct {
-	CallIndex CallIndex
-	Args      Args
-}
-
-func NewCall(m *Metadata, call string, args ...interface{}) (Call, error) {
-	c, err := m.FindCallIndex(call)
-	if err != nil {
-		return Call{}, err
-	}
-
-	var a []byte
-	for _, arg := range args {
-		e, err := EncodeToBytes(arg)
-		if err != nil {
-			return Call{}, err
-		}
-		a = append(a, e...)
-	}
-
-	return Call{c, a}, nil
-}
-
-// Callindex is a 16 bit wrapper around the `[sectionIndex, methodIndex]` value that uniquely identifies a method
-type CallIndex struct {
-	SectionIndex uint8
-	MethodIndex  uint8
-}
-
-func (m *CallIndex) Decode(decoder scale.Decoder) error {
-	err := decoder.Decode(&m.SectionIndex)
-	if err != nil {
-		return err
-	}
-
-	err = decoder.Decode(&m.MethodIndex)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (m CallIndex) Encode(encoder scale.Encoder) error {
-	err := encoder.Encode(m.SectionIndex)
-	if err != nil {
-		return err
-	}
-
-	err = encoder.Encode(m.MethodIndex)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// Args are the encoded arguments for a Call
-type Args []byte
-
-// Encode implements encoding for Args, which just unwraps the bytes of Args
-func (a Args) Encode(encoder scale.Encoder) error {
-	return encoder.Write(a)
-}
-
-// Decode implements decoding for Args, which just reads all the remaining bytes into Args
-func (a *Args) Decode(decoder scale.Decoder) error {
-	for i := 0; true; i++ {
-		b, err := decoder.ReadOneByte()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return err
-		}
-		*a = append((*a)[:i], b)
-	}
-	return nil
-}
-
-type Justification []Bytes
-
-func (j Justification) EngineID() string {
-	if len(j) > 0 {
-		return string(j[0])
-	}
-	return ""
-}
-
-func (j Justification) Payload() Bytes {
-	if len(j) > 1 {
-		return j[1]
-	}
-	return nil
-}
-
-type SignaturePayload struct {
-	Address        Address
-	BlockHash      Hash
-	BlockNumber    BlockNumber
-	Era            ExtrinsicEra
-	GenesisHash    Hash
-	Method         Call
-	Nonce          UCompact
-	RuntimeVersion RuntimeVersion
-	Tip            UCompact
-	Version        uint8
 }
