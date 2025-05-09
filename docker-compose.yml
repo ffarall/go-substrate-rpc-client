@@ -1,13 +1,13 @@
 services:
   substrate:
     container_name: substrate
-    image: parity/polkadot:v1.18.0
+    image: moonbeamfoundation/moonbeam:v0.44
     platform: linux/amd64
     ports:
       - 9933:9933
       - 9944:9944
       - 30333:30333
-    command: --dev --rpc-external --rpc-methods Unsafe --offchain-worker Always
+    command: --dev --rpc-external --rpc-methods Unsafe --offchain-worker Always --sealing 1000
   gsrpc-test:
     image: gsrpc-test
     build: .
