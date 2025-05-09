@@ -23,7 +23,9 @@ import (
 )
 
 // EthSignature
-type EthSignature EcdsaSignature
+type EthSignature struct {
+	Signature EcdsaSignature
+}
 
 func (m *EthSignature) Decode(decoder scale.Decoder) error {
 	// If there are only 65 bytes, it's an EthSignature
@@ -34,16 +36,15 @@ func (m *EthSignature) Decode(decoder scale.Decoder) error {
 	}
 
 	if len(encodedBytes) == 65 {
-		copy(m[:], encodedBytes)
+		copy(m.Signature[:], encodedBytes)
 		return nil
 	} else {
-		return fmt.Errorf("Invalid length for EthSignature (should be 65 bytes): %v", len(encodedBytes))
+		return fmt.Errorf("invalid length for EthSignature (should be 65 bytes): %v", len(encodedBytes))
 	}
 }
 
 func (m EthSignature) Encode(encoder scale.Encoder) error {
-	var err error
-	err = encoder.Encode(m)
+	err := encoder.Encode(m.Signature)
 	if err != nil {
 		return err
 	}

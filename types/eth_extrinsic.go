@@ -165,7 +165,7 @@ func (e *EthExtrinsic) Sign(signer signature.KeyringPair, o SignatureOptions) er
 
 	extSig := EthExtrinsicSignatureV5{
 		Signer:            ethAddr,
-		Signature:         EthSignature(NewEcdsaSignature(sig)),
+		Signature:         EthSignature{Signature: NewEcdsaSignature(sig)},
 		Era:               era,
 		Nonce:             o.Nonce,
 		Tip:               o.Tip,
