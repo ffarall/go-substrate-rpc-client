@@ -1,9 +1,9 @@
 package signature
 
 import (
+	"bytes"
 	"crypto/ecdsa"
 	"encoding/hex"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -64,20 +64,45 @@ func (EcdsaScheme) Sign(data []byte, uri string) ([]byte, error) {
 
 // Verify verifies an ECDSA signature.
 func (EcdsaScheme) Verify(data []byte, sig []byte, uri string) (bool, error) {
+	// Prepare the message hash, identical to the Sign method.
+	// If the data is longer than 256 bytes, Substrate chains will hash it and sign the hash,
+	// using BLAKE2b-256.
+	messageToHash := data
+	if len(messageToHash) > 256 {
+		h := blake2b.Sum256(messageToHash)
+		messageToHash = h[:]
+	}
+
+	// The data needs to always be hashed with Keccak256, mirroring Frontier's verify logic.
+	finalHash := crypto.Keccak256(messageToHash)
+
+	// The signature must be 65 bytes long for Ecrecover [R || S || V]
+	if len(sig) != 65 {
+		return false, fmt.Errorf("invalid signature length: expected 65, got %d", len(sig))
+	}
+
+	// Recover the public key from the signature and the final hash.
+	// Ecrecover returns the public key in 64-byte uncompressed format (X, Y coordinates).
+	recoveredPubKeyBytes, err := crypto.Ecrecover(finalHash, sig)
+	if err != nil {
+		// This typically means the signature is invalid.
+		return false, fmt.Errorf("could not recover public key from signature: %w", err)
+	}
+
+	// Derive the expected public key from the provided URI (private key hex).
 	keyHex := strings.TrimPrefix(uri, "0x")
 	privKey, err := crypto.HexToECDSA(keyHex)
 	if err != nil {
-		return false, fmt.Errorf("invalid private key hex: %w", err)
+		return false, fmt.Errorf("invalid private key hex for deriving expected public key: %w", err)
 	}
-	if len(data) != 32 {
-		data = crypto.Keccak256(data)
+	expectedPubKeyECDSA := privKey.Public().(*ecdsa.PublicKey)
+	// crypto.FromECDSAPub returns the public key in 65-byte uncompressed format (0x04 + X + Y).
+	expectedPubKeyBytesWithPrefix := crypto.FromECDSAPub(expectedPubKeyECDSA)
+
+	if len(expectedPubKeyBytesWithPrefix) != 65 {
+		return false, fmt.Errorf("unexpected length for derived expected public key: expected 65, got %d", len(expectedPubKeyBytesWithPrefix))
 	}
-	// signature must be 65 bytes
-	if len(sig) != 65 {
-		return false, errors.New("wrong signature length")
-	}
-	pubKey := privKey.Public().(*ecdsa.PublicKey)
-	// VerifySignature expects uncompressed public key without prefix
-	pubBytes := crypto.FromECDSAPub(pubKey)[1:]
-	return crypto.VerifySignature(pubBytes, data, sig[:64]), nil
+
+	// Compare the 64-byte recovered public key with the X, Y part of the expected public key.
+	return bytes.Equal(recoveredPubKeyBytes, expectedPubKeyBytesWithPrefix), nil
 } 

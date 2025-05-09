@@ -33,20 +33,11 @@ type ExtrinsicSignatureV4 struct {
 }
 
 type ExtrinsicSignatureV5 struct {
-	Signer            MultiAddress
-	Signature         MultiSignature
+	Signer    		  EthAddress
+	Signature 		  EthSignature
 	Era               ExtrinsicEra      // extra via system::CheckEra
 	Nonce             UCompact          // extra via system::CheckNonce (Compact<Index> where Index is u32))
 	Tip               UCompact          // extra via balances::TakeFees (Compact<Balance> where Balance is u128))
-	CheckMetadataMode CheckMetadataMode // additional via frame_metadata_hash_extension::CheckMetadataHash
-}
-
-type EthExtrinsicSignatureV5 struct {
-	Signer    EthAddress
-	Signature EthSignature
-	Era       ExtrinsicEra // extra via system::CheckEra
-	Nonce     UCompact     // extra via system::CheckNonce (Compact<Index> where Index is u32))
-	Tip       UCompact     // extra via balances::TakeFees (Compact<Balance> where Balance is u128))
 	CheckMetadataMode CheckMetadataMode // additional via frame_metadata_hash_extension::CheckMetadataHash
 }
 

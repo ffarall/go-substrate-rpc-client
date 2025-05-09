@@ -17,7 +17,9 @@
 package types_test
 
 import (
+	"encoding/hex"
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/snowfork/go-substrate-rpc-client/v4/signature"
@@ -64,10 +66,14 @@ func TestExtrinsic_Signed_EncodeDecode(t *testing.T) {
 	assert.Equal(t, ExamplaryExtrinsic, extDec)
 }
 
-func TestExtrinsic_Sign(t *testing.T) {
+ func TestExtrinsic_Sign(t *testing.T) {
+	bobAddress, err := NewEthAddress("0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48")
+	if err != nil {
+		panic(err)
+	}
+
 	c, err := NewCall(ExamplaryMetadataV4,
-		"balances.transfer", NewAddressFromAccountID(MustHexDecodeString(
-			"0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48")),
+		"balances.transfer", bobAddress,
 		NewUCompactFromUInt(6969))
 	assert.NoError(t, err)
 
@@ -85,7 +91,7 @@ func TestExtrinsic_Sign(t *testing.T) {
 
 	assert.False(t, ext.IsSigned())
 
-	err = ext.Sign(signature.TestKeyringPairAlice, o)
+	err = ext.Sign(signature.TestKeyringPairAlith, o)
 	assert.NoError(t, err)
 
 	// fmt.Printf("%#v", ext)
@@ -115,7 +121,7 @@ func TestExtrinsic_Sign(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, uint8(ExtrinsicVersion4), extDec.Type())
-	assert.Equal(t, signature.TestKeyringPairAlice.PublicKey, extDec.Signature.Signer.AsID[:])
+	assert.Equal(t, strings.ToLower(signature.TestKeyringPairAlith.Address), "0x" + strings.ToLower(hex.EncodeToString(extDec.Signature.Signer.Address[:])))
 
 	mb, err := EncodeToBytes(extDec.Method)
 	assert.NoError(t, err)
@@ -140,7 +146,7 @@ func TestExtrinsic_Sign(t *testing.T) {
 	// verify sig
 	b, err := EncodeToBytes(verifyPayload)
 	assert.NoError(t, err)
-	ok, err := signature.TestKeyringPairAlice.Verify(b, extDec.Signature.Signature.AsSr25519[:])
+	ok, err := signature.TestKeyringPairAlith.Verify(b, extDec.Signature.Signature.Signature[:])
 	assert.NoError(t, err)
 	assert.True(t, ok)
 }
@@ -172,7 +178,7 @@ func ExampleExtrinsic() {
 		Tip:         NewUCompactFromUInt(0),
 	}
 
-	err = ext.Sign(signature.TestKeyringPairAlice, o)
+	err = ext.Sign(signature.TestKeyringPairAlith, o)
 	if err != nil {
 		panic(err)
 	}

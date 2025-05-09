@@ -17,7 +17,9 @@
 package author_test
 
 import (
+	"encoding/hex"
 	"fmt"
+	"strings"
 	"testing"
 
 	gsrpc "github.com/snowfork/go-substrate-rpc-client/v4"
@@ -36,7 +38,7 @@ func TestAuthor_SubmitExtrinsic(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Create a call, transferring 12345 units to Bob
-	bob, err := types.NewMultiAddressFromHexAccountID("0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48")
+	bob, err := types.NewEthAddress("0x8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48")
 	assert.NoError(t, err)
 
 	amount := types.NewUCompactFromUInt(12345)
@@ -52,8 +54,13 @@ func TestAuthor_SubmitExtrinsic(t *testing.T) {
 		rv, err := api.RPC.State.GetRuntimeVersionLatest()
 		assert.NoError(t, err)
 
-		// Get the nonce for Alice
-		key, err := types.CreateStorageKey(meta, "System", "Account", signature.TestKeyringPairAlice.PublicKey)
+		// Get the nonce for Alith
+		alithAddressBytes, err := hex.DecodeString(strings.TrimPrefix(signature.TestKeyringPairAlith.Address, "0x"))
+		if err != nil {
+			panic(err)
+		}
+
+		key, err := types.CreateStorageKey(meta, "System", "Account", alithAddressBytes)
 		assert.NoError(t, err)
 
 		var accountInfo types.AccountInfo
@@ -71,11 +78,11 @@ func TestAuthor_SubmitExtrinsic(t *testing.T) {
 			TransactionVersion: rv.TransactionVersion,
 		}
 
-		fmt.Printf("Sending %v from %#x to %#x with nonce %v\n", amount, signature.TestKeyringPairAlice.PublicKey,
-			bob.AsID, nonce)
+		fmt.Printf("Sending %v from %#x to %#x with nonce %v\n", amount, signature.TestKeyringPairAlith.Address,
+			bob.Address, nonce)
 
-		// Sign the transaction using Alice's default account
-		err = ext.Sign(signature.TestKeyringPairAlice, o)
+		// Sign the transaction using Alith's default account
+		err = ext.Sign(signature.TestKeyringPairAlith, o)
 		assert.NoError(t, err)
 
 		res, err := api.RPC.Author.SubmitExtrinsic(ext)

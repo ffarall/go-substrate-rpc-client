@@ -1,12 +1,12 @@
 package types
 
 import (
-	"fmt"
-
 	"github.com/snowfork/go-substrate-rpc-client/v4/scale"
 )
 
-type EthAddress [20]byte
+type EthAddress struct {
+	Address [20]byte
+}
 
 func NewEthAddress(str string) (EthAddress, error) {
 	b, err := HexDecodeString(str)
@@ -16,12 +16,11 @@ func NewEthAddress(str string) (EthAddress, error) {
 	var address [20]byte
 	copy(address[:], b)
 
-	return address, nil
+	return EthAddress{Address: address}, nil
 }
 
 func (m EthAddress) Encode(encoder scale.Encoder) error {
-	var err error
-	err = encoder.Encode(m)
+	err := encoder.Encode(m.Address)
 	if err != nil {
 		return err
 	}
@@ -30,17 +29,10 @@ func (m EthAddress) Encode(encoder scale.Encoder) error {
 }
 
 func (m *EthAddress) Decode(decoder scale.Decoder) error {
-	// If the length is 20, it's an EthAddress
-	var encodedBytes []byte
-	err := decoder.Decode(&encodedBytes)
+	err := decoder.Decode(&m.Address)
 	if err != nil {
 		return err
 	}
 
-	if len(encodedBytes) == 20 {
-		copy(m[:], encodedBytes)
-		return nil
-	} else {
-		return fmt.Errorf("Invalid length for EthAddress (should be 20 bytes): %v", len(encodedBytes))
-	}
+	return nil
 }
