@@ -37,7 +37,7 @@ type KeyringPair struct {
 
 // TestKeyringPairAlice is a predefined test pair using sr25519
 var TestKeyringPairAlice, _ = NewSr25519KeyringPair("//Alice", 42)
-var TestKeyringPairAlith, _ = NewEcdsaKeyringPair("//Alice")
+var TestKeyringPairAlith, _ = NewEcdsaKeyringPair("0x5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133")
 
 // LoadKeyringPairFromEnv looks up whether the env variable TEST_PRIV_KEY is set
 // Assumes that the network is Substrate, so it returns a Sr25519KeyringPair
