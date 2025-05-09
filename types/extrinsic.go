@@ -152,7 +152,10 @@ func (e *Extrinsic) Sign(signer signature.KeyringPair, o SignatureOptions) error
 		CheckMetadataHash: o.CheckMetadataHash,
 	}
 
-	signerPubKey := NewMultiAddressFromAccountID(signer.PublicKey)
+	ethAddr, err := NewEthAddress(signer.Address)
+	if err != nil {
+		return err
+	}
 
 	sig, err := payload.Sign(signer)
 	if err != nil {
@@ -160,8 +163,8 @@ func (e *Extrinsic) Sign(signer signature.KeyringPair, o SignatureOptions) error
 	}
 
 	extSig := ExtrinsicSignatureV5{
-		Signer:            signerPubKey,
-		Signature:         MultiSignature{IsSr25519: true, AsSr25519: sig},
+		Signer:            ethAddr,
+		Signature:         EthSignature{Signature: NewEcdsaSignature(sig)},
 		Era:               era,
 		Nonce:             o.Nonce,
 		Tip:               o.Tip,
@@ -169,7 +172,7 @@ func (e *Extrinsic) Sign(signer signature.KeyringPair, o SignatureOptions) error
 	}
 
 	e.Signature = extSig
-
+	
 	// mark the extrinsic as signed
 	e.Version |= ExtrinsicBitSigned
 
