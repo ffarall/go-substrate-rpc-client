@@ -27,7 +27,7 @@ import (
 type KeyringPair struct {
 	// URI is the derivation path for the private key in subkey
 	URI string
-	// Address is an SS58 address
+	// Address is an SS58 address if the scheme is SR25519, otherwise it's an Ethereum address for ECDSA
 	Address string
 	// PublicKey
 	PublicKey []byte
@@ -37,6 +37,7 @@ type KeyringPair struct {
 
 // TestKeyringPairAlice is a predefined test pair using sr25519
 var TestKeyringPairAlice, _ = NewSr25519KeyringPair("//Alice", 42)
+var TestKeyringPairAlith, _ = NewEcdsaKeyringPair("//Alice")
 
 // LoadKeyringPairFromEnv looks up whether the env variable TEST_PRIV_KEY is set
 // Assumes that the network is Substrate, so it returns a Sr25519KeyringPair
