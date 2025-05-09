@@ -17,8 +17,6 @@
 package types
 
 import (
-	"fmt"
-
 	"github.com/snowfork/go-substrate-rpc-client/v4/scale"
 )
 
@@ -28,20 +26,14 @@ type EthSignature struct {
 }
 
 func (m *EthSignature) Decode(decoder scale.Decoder) error {
-	// If there are only 65 bytes, it's an EthSignature
-	var encodedBytes []byte
-	err := decoder.Decode(&encodedBytes)
+	err := decoder.Decode(&m.Signature)
 	if err != nil {
 		return err
 	}
 
-	if len(encodedBytes) == 65 {
-		copy(m.Signature[:], encodedBytes)
-		return nil
-	} else {
-		return fmt.Errorf("invalid length for EthSignature (should be 65 bytes): %v", len(encodedBytes))
-	}
+	return nil
 }
+
 
 func (m EthSignature) Encode(encoder scale.Encoder) error {
 	err := encoder.Encode(m.Signature)
