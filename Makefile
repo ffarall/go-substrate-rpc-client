@@ -15,26 +15,26 @@
 # limitations under the License.
 clean:				## cleanup
 	@rm -f coverage.txt
-	@docker-compose down
+	@docker compose down
 
 lint:				## run linters on go code
-	@docker run -v `pwd`:/app -w /app golangci/golangci-lint:v1.36.0 golangci-lint run
+	@docker run -v `pwd`:/app -w /app golangci/golangci-lint:v2.1 golangci-lint run
 
 lint-fix: 			## run linters on go code and automatically fixes issues
-	@docker run -v `pwd`:/app -w /app golangci/golangci-lint:v1.36.0 golangci-lint run --fix
+	@docker run -v `pwd`:/app -w /app golangci/golangci-lint:v2.1 golangci-lint run --fix
 
 test: 				## run all tests in project against the RPC URL specified in the RPC_URL env variable or localhost while excluding gethrpc
 	@go test -race -count=1 `go list ./... | grep -v '/gethrpc'`
 
 test-cover: 			## run all tests in project against the RPC URL specified in the RPC_URL env variable or localhost and report coverage
-	@go test -race -coverprofile=coverage.txt -covermode=atomic `go list ./... | grep -v '/gethrpc'`
+	@go test -p=1 -race -coverprofile=coverage.txt -covermode=atomic `go list ./... | grep -v '/gethrpc'`
 
 test-dockerized:		## run all tests in a docker container against the Substrate Default Docker image
 test-dockerized: run-substrate-docker
-	@docker-compose build; docker-compose up --abort-on-container-exit gsrpc-test
+	@docker compose build; docker compose up --abort-on-container-exit gsrpc-test
 
 run-substrate-docker: 		## starts the Substrate Docker image
-	@docker-compose up -d substrate
+	@docker compose up -d substrate
 
 help: 				## shows this help
 	@sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)

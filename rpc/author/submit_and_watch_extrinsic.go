@@ -63,9 +63,10 @@ func (s *ExtrinsicStatusSubscription) Unsubscribe() {
 // SubmitAndWatchExtrinsic will submit and subscribe to watch an extrinsic until unsubscribed, returning a subscription
 // that will receive server notifications containing the extrinsic status updates.
 func (a *Author) SubmitAndWatchExtrinsic(xt types.Extrinsic) (*ExtrinsicStatusSubscription, error) { //nolint:lll
+	
 	ctx, cancel := context.WithTimeout(context.Background(), config.Default().SubscribeTimeout)
 	defer cancel()
-
+	
 	c := make(chan types.ExtrinsicStatus)
 
 	enc, err := types.EncodeToHexString(xt)

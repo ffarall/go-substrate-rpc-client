@@ -216,6 +216,7 @@ func TestCreateStorageKeyArgValidationForNMapKey(t *testing.T) {
 	_, err = assetIdHasher.Write(assetIdSerialized)
 	assert.NoError(t, err)
 	hexStr, err = Hex(assetIdHasher.Sum(nil))
+	assert.NoError(t, err)
 	expectedKeyBuilder.WriteString(strings.TrimPrefix(hexStr, "0x"))
 	// Hashing serialized account id
 	accountIdHasher, err := hash.NewBlake2b128Concat(nil)
@@ -223,6 +224,7 @@ func TestCreateStorageKeyArgValidationForNMapKey(t *testing.T) {
 	_, err = accountIdHasher.Write(accountIdSerialized)
 	assert.NoError(t, err)
 	hexStr, err = Hex(accountIdHasher.Sum(nil))
+	assert.NoError(t, err)
 	// Writing it multiple times as both owner and delegate
 	expectedKeyBuilder.WriteString(strings.TrimPrefix(hexStr, "0x"))
 	expectedKeyBuilder.WriteString(strings.TrimPrefix(hexStr, "0x"))
