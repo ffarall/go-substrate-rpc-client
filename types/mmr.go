@@ -79,7 +79,7 @@ type MMRLeaf struct {
 	Version               MMRLeafVersion
 	ParentNumberAndHash   ParentNumberAndHash
 	BeefyNextAuthoritySet BeefyNextAuthoritySet
-	ParachainHeads        H256
+	BeefyExtraField        H256
 }
 
 type MMRLeafVersion U8
